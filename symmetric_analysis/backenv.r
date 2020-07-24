@@ -47,18 +47,18 @@ d=rbind(
   data.frame(m="LSD",r="Exponential",n=lsd(be,b,rexp()),v="Var: 2.1"),
   data.frame(m="LogD",r="Exponential",n=logD(be,b,rexp()),v="Var: 2.1")
 )
-ggplot(aes(x=n,color=m), data=d)+
-      geom_density(adjust=.7)+theme_classic()+facet_grid(v~r,scales="free")+ 
-  scale_color_brewer(name="",palette = "Dark2")+xlab("Penalty")+xlim(-10,10)+
+ggplot(aes(x=n), data=d)+
+      geom_density(aes(color=m))+geom_histogram(aes(fill=m,y=..density..),position = "identity",binwidth = 0.05,alpha=0.4)+theme_classic()+facet_grid(v~r,scales="free")+ 
+  scale_color_brewer(name="",palette = "Dark2")+scale_fill_brewer(name="",palette = "Dark2")+xlab("Penalty")+xlim(-10,10)+
   geom_vline(xintercept = 0,linetype=3)+theme(legend.position = c(0.87,0.2))+coord_cartesian(xlim=c(-4,4))
 ggsave("product.pdf",width=10,height = 6)
 
 
-ggplot(aes(x=n,color=m), data=d)+
-  geom_density(adjust=.7)+theme_classic()+facet_grid(v~r,scales="free")+ 
-  scale_color_brewer(name="",palette = "Dark2")+xlab("Penalty")+xlim(-10,10)+
-  geom_vline(xintercept = 0,linetype=3)+theme(legend.position = c(0.87,0.2))+coord_cartesian(xlim=c(-4,4))
-ggsave("product.pdf",width=10,height = 6)
+ggplot(aes(x=n,fill=m), data=d)+
+  geom_histogram(position = "identity",binwidth = 0.02,alpha=0.5)+theme_classic()+facet_grid(v~r,scales="free")+ 
+  scale_fill_brewer(name="",palette = "Dark2")+xlab("Penalty")+xlim(c(-10,10))+
+  geom_vline(xintercept = 0,linetype=3)+theme(legend.position = c(0.87,0.2))+coord_cartesian(xlim=c(-1,1))
+ggsave("hist.pdf",width=10,height = 6)
 
 ######################### Compound
 
