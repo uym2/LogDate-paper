@@ -171,8 +171,6 @@ d=rbind(
   data.frame(m="LogDate",r="Strict",n=logD(bs,b),v="Var: 0",o=bs) 
 );
 
-d$n2=d$n^2
-
 ggplot(aes(x=n), data=d)+
   geom_density(aes(color=m))+geom_histogram(aes(fill=m,y=..density..),position = "identity",binwidth = 0.05,alpha=0.4)+
   theme_classic()+facet_wrap(~interaction(r,v,sep=": "),scales="free",ncol=3)+ 
@@ -180,9 +178,9 @@ ggplot(aes(x=n), data=d)+
   geom_vline(xintercept = 0,linetype=3)+theme(legend.position = c(0.87,0.1))+coord_cartesian(xlim=c(-3.3,3.3))
 ggsave("compound.pdf",width=7,height = 9)
 
-d$oc= cut(log(d$o), (-1000:50)/50)
+#d$oc= cut(log(d$o), (-1000:50)/50)
 #d$oc= cut(d$o, 50000)
-d$oc= cut(d$n,(-1000:1000000)/50)
+#d$oc= cut(d$n,(-1000:1000000)/50)
 dc = dcast(r+v+o~m,data=d,value.var = "n");
 dc$oc  = cut(dc$LogDate,1000);
 d = melt(dc,id.vars = c(1:3,6),value.name = "n",variable.name = "m");
@@ -193,7 +191,7 @@ a$n2=recast(oc+m+r+v~.,data=d,measure.var ="n2",fun.aggregate=median)$.
 a$n=recast(oc+m+r+v~.,data=d,measure.var ="n",fun.aggregate=median)$.
 a$c = a$.
 
-ggplot(aes(y=(c/sc/5),x=n2,color=m), data=a[(a$c/sc/5)>0.0001,])+
+ggplot(aes(y=(c/t),x=n2,color=m), data=a[log(a$c/t)>-7&a$n2<1000,])+
   #geom_density(aes(color=m),kernel="b",adjust=2)+
   geom_point(alpha=0.6,size=0.5)+
   theme_classic()+theme(legend.position = c(0.8,0.15))+
@@ -204,7 +202,7 @@ ggsave("compound-penalty.pdf",width=7,height = 9)
 
 ggplot(aes(x=log(c/t),y=n2,color=m), data=a[log(a$c/t)>-7&a$n2<1000,])+
   #geom_density(aes(color=m),kernel="b",adjust=2)+
-  geom_line(aes(group=interaction(m,n>0)),size=0.4)+
+  #geom_line(aes(group=interaction(m,n>0)),size=0.4)+
   geom_point(alpha=0.5,size=0.5)+
   theme_classic()+theme(legend.position = c(0.8,0.15))+
   facet_wrap(~interaction(r,v,sep=": "),scales="free",ncol=3)+ 
