@@ -6,7 +6,7 @@ require(scales)
 sc = 500000
 
 b=0.1
-s=200
+s=500
 
 
 ###################### Product ################
@@ -98,11 +98,24 @@ ggplot(aes(y=c/sc,x=n2,color=m), data=a)+
   xlab("Penalty")+scale_x_sqrt(lim=c(0,10))+scale_y_continuous(name="Frequency of data",labels=percent)
 ggsave("product-penalty.pdf",width=7,height = 9)
 
+ggplot(aes(x=log(c/sc/5),y=n2,color=m), data=a[(a$c/sc/5)>0.001,])+
+  #geom_density(aes(color=m),kernel="b",adjust=2)+
+  geom_point(alpha=0.6,size=0.5)+
+  theme_classic()+theme(legend.position = c(0.8,0.15))+
+  facet_wrap(~interaction(r,v,sep=": "),scales="free",ncol=3)+ 
+  scale_color_brewer(name="",palette = "Dark2")+scale_fill_brewer(name="",palette = "Dark2")+
+  scale_y_continuous(name="Penalty")+scale_x_continuous(name="Log likelihood (empirical)")
+ggsave("compound-ll.pdf",width=7,height = 9)
+
 ######################### Compound
 
 
-sc = 100000
-ee  = function(bt) vapply(rnorm(n=5*sc,bt,sqrt(bt/s)),FUN=function(x) max(x,0.000001),1) 
+t = 500000
+per = 10
+sc = t/per
+s=500
+ee  = function(bt) vapply(rnorm(n=t,bt,sqrt(bt/s)),FUN=function(x) max(x,0.00001),1) 
+ee  = function(bt) {a=rnorm(n=t,bt,sqrt(bt/s));a[a>0]}
 
 bg = function(v) { ee( rgamma(sc,1/v,1/v)*b)}
 bexp = function() {ee (stats::rexp(sc,log(2))*b )}
@@ -164,20 +177,37 @@ ggplot(aes(x=n), data=d)+
   geom_density(aes(color=m))+geom_histogram(aes(fill=m,y=..density..),position = "identity",binwidth = 0.05,alpha=0.4)+
   theme_classic()+facet_wrap(~interaction(r,v,sep=": "),scales="free",ncol=3)+ 
   scale_color_brewer(name="",palette = "Dark2")+scale_fill_brewer(name="",palette = "Dark2")+xlab("Penalty (without square)")+xlim(-10,10)+
-  geom_vline(xintercept = 0,linetype=3)+theme(legend.position = c(0.87,0.2))+coord_cartesian(xlim=c(-3.3,3.3))
+  geom_vline(xintercept = 0,linetype=3)+theme(legend.position = c(0.87,0.1))+coord_cartesian(xlim=c(-3.3,3.3))
 ggsave("compound.pdf",width=7,height = 9)
 
-d$oc= cut(log(d$o), (-2500:200)/50)
+d$oc= cut(log(d$o), (-1000:50)/50)
+#d$oc= cut(d$o, 50000)
+d$oc= cut(d$n,(-1000:1000000)/50)
+dc = dcast(r+v+o~m,data=d,value.var = "n");
+dc$oc  = cut(dc$LogDate,1000);
+d = melt(dc,id.vars = c(1:3,6),value.name = "n",variable.name = "m");
+d$n2=d$n^2;
+
 a = recast(oc+m+r+v~.,data=d,measure.var ="n",fun.aggregate=length)
 a$n2=recast(oc+m+r+v~.,data=d,measure.var ="n2",fun.aggregate=median)$.
 a$n=recast(oc+m+r+v~.,data=d,measure.var ="n",fun.aggregate=median)$.
 a$c = a$.
 
-ggplot(aes(y=c/sc,x=n2,color=m), data=a)+
+ggplot(aes(y=(c/sc/5),x=n2,color=m), data=a[(a$c/sc/5)>0.0001,])+
   #geom_density(aes(color=m),kernel="b",adjust=2)+
-  geom_point(alpha=0.6)+
+  geom_point(alpha=0.6,size=0.5)+
   theme_classic()+theme(legend.position = c(0.8,0.15))+
   facet_wrap(~interaction(r,v,sep=": "),scales="free",ncol=3)+ 
   scale_color_brewer(name="",palette = "Dark2")+scale_fill_brewer(name="",palette = "Dark2")+
-  xlab("Penalty")+scale_x_sqrt(lim=c(0,2))+scale_y_continuous(name="Frequency of data",labels=percent)
+  scale_x_continuous(name="Penalty")+scale_y_log10(name="Likelihood (empirical)")
 ggsave("compound-penalty.pdf",width=7,height = 9)
+
+ggplot(aes(x=log(c/t),y=n2,color=m), data=a[log(a$c/t)>-7&a$n2<1000,])+
+  #geom_density(aes(color=m),kernel="b",adjust=2)+
+  geom_line(aes(group=interaction(m,n>0)),size=0.4)+
+  geom_point(alpha=0.5,size=0.5)+
+  theme_classic()+theme(legend.position = c(0.8,0.15))+
+  facet_wrap(~interaction(r,v,sep=": "),scales="free",ncol=3)+ 
+  scale_color_brewer(name="",palette = "Dark2")+scale_fill_brewer(name="",palette = "Dark2")+
+  scale_y_log10(name="Penalty")+scale_x_continuous(name="Log likelihood (empirical)")
+ggsave("compound-ll.pdf",width=7,height = 9)
