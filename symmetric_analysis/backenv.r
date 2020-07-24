@@ -101,21 +101,83 @@ ggsave("product-penalty.pdf",width=7,height = 9)
 ######################### Compound
 
 
-ee  = function(bt) rnorm(n=5*sc,bt,sqrt(bt/s))
-bg = function(v) { ee( rgamma(sc,1/v,1/v)*b)}
-gexp = function() {ee (rexp(sc,log(2))*b )}
-bLN = function(v) {ee (rlnorm(sc,meanlog = 0,sdlog =sqrt(log(1/2 + 1/2 *sqrt(1 + 4 *v))))*b)}
+sc = 100000
+ee  = function(bt) vapply(rnorm(n=5*sc,bt,sqrt(bt/s)),FUN=function(x) max(x,0.000001),1) 
 
+bg = function(v) { ee( rgamma(sc,1/v,1/v)*b)}
+bexp = function() {ee (stats::rexp(sc,log(2))*b )}
+bLN = function(v) {ee (rlnorm(sc,meanlog = 0,sdlog =sqrt(log(1/2 + 1/2 *sqrt(1 + 4 *v))))*b)}
 bCN = function(v,a=0.1) {
   x=(1:60)/40;
   p=x[which.min(abs(c((exp(2*x)-exp(-2*x))/4/x-(exp(x)-exp(-x))^2/4/x^2)-v))];
-  bt = exp(runif(sc,-p,p)); 
-  rnorm(n=5*sc,bt,sqrt(bt/s))}
-summary(b/bCN(1/2)); var(b/bCN(1/2));
+  ee( exp(runif(sc,-p,p))*b)}
+
+summary(bCN(1/3)); var(bCN(1/3));
 summary(bLN(1/2)); var(bLN(1/2));
-summary(bg(1/2)); var(bg(1/2))
+summary(bg(1/2)); var(bg(1/2));
+summary(bexp()); var(bexp())
 
+bgl2 = bg(1/9);   bg13 = bg(1/3);    bgm = bg(1);     #bgn = bg(1/1000);
+bLNl2 = bLN(1/9); bLN13 = bLN(1/3);  bLNm = bLN(1);  #blNn = bLN(1/1000);
+bCNl2 = bCN(1/9); bCN13 = bCN(1/3);  bCNm = bCN(1); #bCNn = bCN(1/1000);
+bex = bexp();
+bs=ee(1*b)
 
-lsd = function(be,b,v) {b/be(v)-1}
-logD = function(be,b,v) {log(b/be(v))}
+lsd = function(be,b) {b/be-1}
+logD = function(be,b) {log(b/be)}
 
+d=rbind(
+  #data.frame(m="LSD",r="Strict",n=lsd(be,b,1),v=0),
+  #data.frame(m="LogDate",r="Strict",n=logD(be,b,1),v=0),
+  data.frame(m="LSD",r="Gamma",n=lsd(bgl2,b),v="Var: 1/9",o=bgl2),
+  data.frame(m="LogDate",r="Gamma",n=logD(bgl2,b),v="Var: 1/9",o=bgl2),
+  data.frame(m="LSD",r="LogNormal",n=lsd(bLNl2,b),v="Var: 1/9",o=bLNl2),
+  data.frame(m="LogDate",r="LogNormal",n=logD(bLNl2,b),v="Var: 1/9",o=bLNl2),   
+  data.frame(m="LSD",r="LogUnif",n=lsd(bCNl2,b),v="Var: 1/9",o=bCNl2),
+  data.frame(m="LogDate",r="LogUnif",n=logD(bCNl2,b),v="Var: 1/9",o=bCNl2), 
+  
+  data.frame(m="LSD",r="Gamma",n=lsd(bg13,b),v="Var:1/3",o=bg13),
+  data.frame(m="LogDate",r="Gamma",n=logD(bg13,b),v="Var:1/3",o=bg13),
+  data.frame(m="LSD",r="LogNormal",n=lsd(bLN13,b),v="Var:1/3",o=bLN13),
+  data.frame(m="LogDate",r="LogNormal",n=logD(bLN13,b),v="Var:1/3",o=bLN13),
+  data.frame(m="LSD",r="LogUnif",n=lsd(bCN13,b),v="Var:1/3",o=bCN13),
+  data.frame(m="LogDate",r="LogUnif",n=logD(bCN13,b),v="Var:1/3",o=bCN13),
+  
+  
+  data.frame(m="LSD",r="Gamma",n=lsd(bgm,b),v="Var: 1",o=bgm),
+  data.frame(m="LogDate",r="Gamma",n=logD(bgm,b),v="Var: 1",o=bgm),
+  data.frame(m="LSD",r="LogNormal",n=lsd(bLNm,b),v="Var: 1",o=bLNm),
+  data.frame(m="LogDate",r="LogNormal",n=logD(bLNm,b),v="Var: 1",o=bLNm),
+  data.frame(m="LSD",r="LogUnif",n=lsd(bCNm,b),v="Var: 1",o=bCNm),
+  data.frame(m="LogDate",r="LogUnif",n=logD(bCNm,b),v="Var: 1",o=bCNm),
+  
+  data.frame(m="LSD",r="Exponential",n=lsd(bex,b),v="Var: 2.1",o=bex),
+  data.frame(m="LogDate",r="Exponential",n=logD(bex,b),v="Var: 2.1",o=bex),
+  
+  data.frame(m="LSD",r="Strict",n=lsd(bs,b),v="Var: 0",o=bs),
+  data.frame(m="LogDate",r="Strict",n=logD(bs,b),v="Var: 0",o=bs) 
+);
+
+d$n2=d$n^2
+
+ggplot(aes(x=n), data=d)+
+  geom_density(aes(color=m))+geom_histogram(aes(fill=m,y=..density..),position = "identity",binwidth = 0.05,alpha=0.4)+
+  theme_classic()+facet_wrap(~interaction(r,v,sep=": "),scales="free",ncol=3)+ 
+  scale_color_brewer(name="",palette = "Dark2")+scale_fill_brewer(name="",palette = "Dark2")+xlab("Penalty (without square)")+xlim(-10,10)+
+  geom_vline(xintercept = 0,linetype=3)+theme(legend.position = c(0.87,0.2))+coord_cartesian(xlim=c(-3.3,3.3))
+ggsave("compound.pdf",width=7,height = 9)
+
+d$oc= cut(log(d$o), (-2500:200)/50)
+a = recast(oc+m+r+v~.,data=d,measure.var ="n",fun.aggregate=length)
+a$n2=recast(oc+m+r+v~.,data=d,measure.var ="n2",fun.aggregate=median)$.
+a$n=recast(oc+m+r+v~.,data=d,measure.var ="n",fun.aggregate=median)$.
+a$c = a$.
+
+ggplot(aes(y=c/sc,x=n2,color=m), data=a)+
+  #geom_density(aes(color=m),kernel="b",adjust=2)+
+  geom_point(alpha=0.6)+
+  theme_classic()+theme(legend.position = c(0.8,0.15))+
+  facet_wrap(~interaction(r,v,sep=": "),scales="free",ncol=3)+ 
+  scale_color_brewer(name="",palette = "Dark2")+scale_fill_brewer(name="",palette = "Dark2")+
+  xlab("Penalty")+scale_x_sqrt(lim=c(0,2))+scale_y_continuous(name="Frequency of data",labels=percent)
+ggsave("compound-penalty.pdf",width=7,height = 9)
