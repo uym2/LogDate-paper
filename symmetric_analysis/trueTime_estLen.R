@@ -1,6 +1,8 @@
 # phyML estimated
 
 d = read.table("trueTime_estLen.txt",header=T)
+d$clock = factor(d$clock,levels = c("Strict","Lognormal","Gamma","Exponential"))
+
 
 require(ggplot2)
 
@@ -48,14 +50,14 @@ lsd = function(be,b) {b/be-1}
 logD = function(be,b) {log(b/be)}
 
 d1=rbind(
-  data.frame(m="LSD",r="Gamma",n=lsd(bgl2,b),v="Var: 1/6",o=bgl2),
-  data.frame(m="LogDate",r="Gamma",n=logD(bgl2,b),v="Var: 1/6",o=bgl2),
+  data.frame(m="LSD",r="Strict",n=lsd(bs,b),v="Var: 0",o=bs),
+  data.frame(m="LogDate",r="Strict",n=logD(bs,b),v="Var: 0",o=bs),
   data.frame(m="LSD",r="LogNormal",n=lsd(bLNl2,b),v="Var: 1/6",o=bLNl2),
   data.frame(m="LogDate",r="LogNormal",n=logD(bLNl2,b),v="Var: 1/6",o=bLNl2),
+  data.frame(m="LSD",r="Gamma",n=lsd(bgl2,b),v="Var: 1/6",o=bgl2),
+  data.frame(m="LogDate",r="Gamma",n=logD(bgl2,b),v="Var: 1/6",o=bgl2),
   data.frame(m="LSD",r="Exponential",n=lsd(bex,b),v="Var: 1",o=bex),
-  data.frame(m="LogDate",r="Exponential",n=logD(bex,b),v="Var: 1",o=bex),
-  data.frame(m="LSD",r="Strict",n=lsd(bs,b),v="Var: 0",o=bs),
-  data.frame(m="LogDate",r="Strict",n=logD(bs,b),v="Var: 0",o=bs)
+  data.frame(m="LogDate",r="Exponential",n=logD(bex,b),v="Var: 1",o=bex)
 );
 
 ggplot(aes(x=n), data=d1)+
@@ -65,7 +67,8 @@ ggplot(aes(x=n), data=d1)+
   scale_color_brewer(name="",palette = "Dark2")+
   scale_fill_brewer(name="",palette = "Dark2")+xlab("Penalty (without square)")+xlim(-10,10)+
   geom_vline(xintercept = 0,linetype=3)+
-  theme(legend.position = c(0.4,0.2))+
+  theme(legend.position = c(0.92,0.3),legend.text = element_text(size = 7),
+        legend.key.size = unit(0.5, "lines"))+
   coord_cartesian(xlim=c(-3.3,3.3))
 ggsave("compound_4panels.pdf",width=4,height = 4)
 
