@@ -59,12 +59,13 @@ d1=rbind(
 );
 
 ggplot(aes(x=n), data=d1)+
-  geom_density(aes(color=m))+geom_histogram(aes(fill=m,y=..density..),position = "identity",binwidth = 0.05,alpha=0.4)+
+  geom_density(aes(color=m))+
+  geom_histogram(aes(fill=m,y=..density..),position = "identity",binwidth = 0.05,alpha=0.4)+
   theme_classic()+facet_wrap(~r,scales="free")+ 
   scale_color_brewer(name="",palette = "Dark2")+
   scale_fill_brewer(name="",palette = "Dark2")+xlab("Penalty (without square)")+xlim(-10,10)+
   geom_vline(xintercept = 0,linetype=3)+
-  theme(legend.position = "bottom")+
+  theme(legend.position = c(0.4,0.2))+
   coord_cartesian(xlim=c(-3.3,3.3))
 ggsave("compound_4panels.pdf",width=4,height = 4)
 
