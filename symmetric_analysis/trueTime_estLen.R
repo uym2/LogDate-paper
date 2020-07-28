@@ -17,7 +17,7 @@ ggplot(d[d$estLen > 1e-3,]) +
   facet_wrap(~clock,scale="free") + theme_classic() +
   theme(legend.position = "None")
 
-ggsave("trueTime_estLen.pdf",width=10,height=3)
+ggsave("trueTime_estLen.pdf",width=4,height=4)
 
 ###################################################
 
