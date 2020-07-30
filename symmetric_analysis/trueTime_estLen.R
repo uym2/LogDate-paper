@@ -112,7 +112,7 @@ a$n2=recast(oc+m+r+v~.,data=d,measure.var ="n2",fun.aggregate=median)$.
 a$n=recast(oc+m+r+v~.,data=d,measure.var ="n",fun.aggregate=median)$.
 a$c = a$.
 
-ggplot(aes(x=log(c/t),y=n2,color=m), data=a[log(a$c/t)>-10,])+
+ggplot(aes(x=log(c/t),y=n2,color=m), data=a)+
   #geom_density(aes(color=m),kernel="b",adjust=2)+
   #geom_line(aes(group=interaction(m,n>0)),size=0.4)+
   geom_point(alpha=0.5,size=0.5)+
