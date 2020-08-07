@@ -37,7 +37,7 @@ a$c = a$.
 
 a$m = factor(a$m,levels = c("LSD","LogDate"))
 
-ggplot(aes(x=log(c/t),y=n2,color=m), data=a)+
+ggplot(aes(x=log(c/60479),y=n2,color=m), data=a)+
   #geom_density(aes(color=m),kernel="b",adjust=2)+
   #geom_line(aes(group=interaction(m,n>0)),size=0.4)+
   geom_point(alpha=0.5,size=0.5)+
@@ -45,20 +45,24 @@ ggplot(aes(x=log(c/t),y=n2,color=m), data=a)+
   theme(legend.position = "None")+
   facet_wrap(~clock,scales="free")+ 
   scale_color_brewer(name="",palette = "Dark2")+scale_fill_brewer(name="",palette = "Dark2")+
-  scale_y_log10(name="Penalty")+scale_x_continuous(name="Log likelihood (empirical)")
-ggsave("penalty_llh.pdf",width=4,height=4)
+  scale_y_log10(name="Penalty (squared)")+scale_x_continuous(name="Log likelihood (empirical)")
+ggsave("penalty_llh.png",width=4,height=4)
 
 
 ###################################################
 
 # Normal model of the estimated branches
-sc = 500000
 b=0.1
 s=500
 
+t = 500000
+per = 10
+sc = t/per
+
 bg = function(v) { ee( rgamma(sc,1/v,1/v)*b)}
 bexp = function() {ee (stats::rexp(sc,1)*b )}
-bLN = function(v) {ee (rlnorm(sc,meanlog = 0,sdlog =sqrt(log(1/2 + 1/2 *sqrt(1 + 4 *v))))*b)}
+#bLN = function(v) {ee (rlnorm(sc,meanlog = 0,sdlog =sqrt(log(1/2 + 1/2 *sqrt(1 + 4 *v))))*b)}
+bLN = function(v) {ee (rlnorm(sc,meanlog =-log(v+1)/2,sdlog =sqrt(log(v+1)))*b)}
 bCN = function(v,a=0.1) {
   x=(1:60)/40;
   p=x[which.min(abs(c((exp(2*x)-exp(-2*x))/4/x-(exp(x)-exp(-x))^2/4/x^2)-v))];
@@ -117,9 +121,9 @@ ggplot(aes(x=log(c/t),y=n2,color=m), data=a)+
   #geom_line(aes(group=interaction(m,n>0)),size=0.4)+
   geom_point(alpha=0.5,size=0.5)+
   theme_classic()+theme(legend.position = "None")+
-  facet_wrap(~interaction(r,v,sep=": "),scales="free",ncol=2)+ 
+  facet_wrap(~r,scales="free",ncol=2)+ 
   scale_color_brewer(name="",palette = "Dark2")+scale_fill_brewer(name="",palette = "Dark2")+
-  scale_y_log10(name="Penalty")+scale_x_continuous(name="Log likelihood (empirical)")
+  scale_y_log10(name="Penalty (squared)")+scale_x_continuous(name="Log likelihood (empirical)")
 
-ggsave("penalty_llh_normal.pdf",width=4,height = 4)
+ggsave("penalty_llh_normal.png",width=4,height = 4)
 

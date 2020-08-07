@@ -108,7 +108,9 @@ ggplot(aes(x=log(c/sc/5),y=n2,color=m), data=a[(a$c/sc/5)>0.001,])+
 ggsave("compound-ll.pdf",width=7,height = 9)
 
 ######################### Compound
+sc = 500000
 
+b=0.1
 
 t = 500000
 per = 10
